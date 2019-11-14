@@ -1,0 +1,181 @@
+---
+title: 'Project 1: Urban Ministries of Durham'
+author: "Jesus E. Vazquez"
+date: "September 24, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Background & Data Description
+
+Urban Ministries of Durham assist around 6,000 people each year who need food, shelter, clothing and/or supportive services. Some of the programs that they offer is a (1) community shelter where people are given a place to sleep and assistance to help them find a home, a (2) Community Caf? serves three meals a day, seven days a week, 365 days a year, and a (3) food and clothing closet for those that either need food or clothing. Donations, just to as any homeless shelter, are important to maintain services, therefore communicating the importance of donations should be a high priority.
+
+### Approach
+
+**Questions** 
+
+(1) How is financial support to members of the Urban Ministries of Durham used?
+(2) What time of the year do members among the community make use of the Community Caf??
+
+**Methods**
+
+To approach these two questions (1) a bar plot with the frequencies of *type of bill paid* will be plotted with the *average amount paid* as a label, and (2) a trend-line on the frequency of meals *food provided* served throughout the *duration of the year* will also be plotted. Having this information handy at the moment of meeting with potential donors is of great importance to communicate how important their help is.
+
+### Results
+
+**How is financial support used?**
+
+```{R echo=FALSE, message=FALSE, warning = FALSE}
+library(tidyverse)
+# Importing Data
+mydf_original <- read_tsv("https://raw.githubusercontent.com/biodatascience/datasci611/gh-pages/data/project1_2019/UMD_Services_Provided_20190719.tsv")
+
+
+################# Plot 1 #################
+# Removing observations that have NAs in type of bill paid and financial support
+mydf <- mydf_original[-which(is.na(mydf_original$`Financial Support`)),]
+mydf <- mydf[-which(is.na(mydf$`Type of Bill Paid`)),]
+
+# Excluding those who were not given financial support 
+mydf <- mydf[-which(mydf$`Financial Support` == 0),]
+
+#changing all characters to lower case and grouping them by category
+mydf$`Type of Bill Paid` <- (tolower(mydf$`Type of Bill Paid`))
+
+# Categorize each type of bill by the type key words used to describe the event, e.g. energy -> Electricity Bill
+for (i in 1:dim(mydf)[1]) {
+    
+    # Those paying their electricity bill
+    if(str_detect(mydf[i,14], c("duke")) || str_detect(mydf[i,14], c("power")) || str_detect(mydf[i,14], "electricity") || str_detect(mydf[i,14], "energy")){
+        mydf[i,14] <- paste("Electricity Bill") 
+        next
+    }
+    
+    # those paying their water bill
+    if(str_detect(mydf[i,14], "water")){
+        mydf[i,14] <- paste("Water Bill") 
+        next
+    }
+    
+    # those that needed money to get home in different state or transportation related expenses
+    if(str_detect(mydf[i,14], "bus") || str_detect(mydf[i,14], "greyhound") || str_detect(mydf[i,14], "ticket") || str_detect(mydf[i,14], "car")){
+        mydf[i,14] <- paste("Transportation") 
+        next
+    }
+    
+    # Those needing to pay rent or other housing relating bills
+    if(str_detect(mydf[i,14], "rent") || str_detect(mydf[i,14], "mortgage") || str_detect(mydf[i,14], "deposit")){
+        mydf[i,14] <- paste("Housing") 
+        next
+    }
+    
+    # Those needing to pay their Natural Gas Bill
+    if(str_detect(mydf[i,14], "gas") || str_detect(mydf[i,14], "heating")){
+        mydf[i,14] <- paste("Gas Bill") 
+        next
+    }
+    
+    # Medical related expenses
+    if(str_detect(mydf[i,14], "prescription") || str_detect(mydf[i,14], "med") || str_detect(mydf[i,14], "hospital") || str_detect(mydf[i,14], "eyeglasses") || str_detect(mydf[i,14], "pharmacy")){
+        mydf[i,14] <- paste("Medical Expenses") 
+        next
+    }
+    
+    # If the bill did not make it into any of the other categories is was lumped with other
+    mydf[i,14] <- paste("Other")
+}
+
+# Getting a count financial support requests by type of bill
+typesofbill <- as.data.frame(table(mydf$`Type of Bill Paid`))
+colnames(typesofbill) <- c("name", "count")
+
+# Getting the average on amount awarded by type of bill
+typesofbill <- typesofbill[order(-typesofbill$count),]
+mymeans <- aggregate(mydf$`Financial Support`, by=list(mydf$`Type of Bill Paid`), mean)
+colnames(mymeans) <- c("name", "mean")
+
+# Merge the counts and avergae amount awarded per bill 
+finaldf <- merge(typesofbill, mymeans, by='name') 
+finaldf$mean <- round(finaldf$mean, 2)
+finaldf$meandollar <- paste("($",finaldf$mean,")")
+
+#Sort by count decreasing order
+finaldf <- finaldf[order(-finaldf$count),]
+
+
+p1 <- ggplot(finaldf, aes(x= reorder(finaldf$name, -finaldf$count), y=finaldf$count)) + theme_minimal() + 
+    geom_bar(stat="identity", width=.5, fill = "#FFDB6D", color = "#C4961A") + geom_text(aes(x=finaldf$name, y=finaldf$count+10, label = finaldf$meandollar)) +
+    labs(title="Types of Bills Paid Through Financial Support", subtitle = 'Values in Parentheses Denote Mean Support', caption="Data Source: Urban Ministries of Durham", y = 'Count', x = '') +
+    theme(axis.text.x = element_text(angle=90, vjust=0.6))
+p1
+```
+
+As observed from the plot above we can see that among those given financial support, most of the bills paid were electricity bills with an average of $140.62 per bill. Other bills included housing such as rent and security deposit, medical expenses such as medications, transportation, water, gas, and other which included birth certificates among other type of bills. With this information we can see that the financial support was approved to pay for necessities and not for other type of expenses, e.g. - Luxury hand-bags. 
+
+
+
+**What time of the year do members among the community make use of the Community Caf??**
+
+```{R echo=FALSE, message=FALSE, warning = FALSE}
+################# Plot 2 #################
+library(reshape2)
+library(stringr)
+mydf <- mydf_original
+
+# extract the year by doing a split on the date column
+mydates <- colsplit(mydf$Date, "/", names = c("Month", "Day", "Year"))
+
+# Select years 2010 to 2019 
+mydf <- cbind(mydates, mydf) %>% 
+        subset(Year >= 2010, select = c('Food Provided for', "Month", "Year")) %>%
+        subset(Year <= 2019)
+
+# We get a sum of all meals given per month and year and rename columns
+mealspermonth <- aggregate(. ~ Month + Year, data = mydf, sum, na.rm = TRUE)
+colnames(mealspermonth) <- c("Month", "Year", "Count")
+mealspermonth$Year <- as.factor(mealspermonth$Year)
+
+# Spread the data so that each year has it's own column and take the average of years 2010 to 2018
+temporarydf <- spread(mealspermonth, key = Year, value = Count)
+
+# Sum all columns and divide it by the number of years, in this case 9
+temporarydf$`2010-2018 Average` <- (temporarydf$`2010`+ temporarydf$`2011` + temporarydf$`2012` + temporarydf$`2013` + temporarydf$`2014` + temporarydf$`2015` + temporarydf$`2016` +temporarydf$`2017` + temporarydf$`2018`)/9
+
+# Gather back the columns into the original form and subset the average of the years and year 2019
+mealspermonth <- gather(temporarydf, "Year", "Count", 2:12)
+mealspermonth <- subset(mealspermonth, Year %in% c("2019", "2010-2018 Average"))
+
+# Since the data does not look to behave after June, we only consider up to June of 2019
+mealspermonth <- mealspermonth[-which(mealspermonth$Year == "2019" & mealspermonth$Month >= 6),]
+
+# Assign actual month names instead of numbers 
+mealspermonth[which(mealspermonth$Month == 1),4] <- paste("January")
+mealspermonth[which(mealspermonth$Month == 2),4] <- paste("February")
+mealspermonth[which(mealspermonth$Month == 3),4] <- paste("March")
+mealspermonth[which(mealspermonth$Month == 4),4] <- paste("April")
+mealspermonth[which(mealspermonth$Month == 5),4] <- paste("May")
+mealspermonth[which(mealspermonth$Month == 6),4] <- paste("June")
+mealspermonth[which(mealspermonth$Month == 7),4] <- paste("July")
+mealspermonth[which(mealspermonth$Month == 8),4] <- paste("August")
+mealspermonth[which(mealspermonth$Month == 9),4] <- paste("September")
+mealspermonth[which(mealspermonth$Month == 10),4] <- paste("October")
+mealspermonth[which(mealspermonth$Month == 11),4] <- paste("November")
+mealspermonth[which(mealspermonth$Month == 12),4] <- paste("December")
+
+# Plot graph 2
+p2 <-ggplot(mealspermonth, aes(x= reorder(V4, Month), y=Count, group=Year)) + theme_minimal() +
+    geom_line(aes(color=Year)) +
+    geom_point(aes(color=Year)) +
+    labs(title="Number of Meals Per Month", subtitle = '2010 to 2018 Average vs. 2019', caption="Data Source: Urban Ministries of Durham", y = 'Count', x = '') +
+    theme(axis.text.x = element_text(angle=90, vjust=0.6), legend.position="bottom")  
+p2
+```
+
+The graph above illustrates the number of meals per month served. The orange line indicates the average of 2010-2018 and the blue line indicates the present year number of meals served each month. As we can observe the Urban Ministries of Durham has been serving about their 2010-2018 average so it's highly important for communicate the need for support. This graph will play a key role when meeting with grocery stores in the community asking for food donations.
+
+### Conclusions
+
+As the plots suggest, financial assitance helped members of the Urban Ministries of Durham pay for basic neccesities such as electricity and water bills. Given that money used for financial assistance was not misused, the services should come back. 2019 has observed a larger number of meals served per month thus it will also be of interest for the Urban Ministries of Durham to prepapre to serve more meals for the rest of the year. 
