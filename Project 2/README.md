@@ -1,7 +1,5 @@
 **Author: Jesus Vazquez**
 
-**Project 2**
-**BIOS 611**
 **FALL 2019**
 
 **Background Description**
