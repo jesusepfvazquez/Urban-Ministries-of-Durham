@@ -1,0 +1,45 @@
+Hi jvazquez2,
+
+Your project is really fantastic, which includes a lot of deep thinkings and profound conclusions, so I think it would be very useful.
+
+But I'm not sure whether the staffs of UMD will be your audience. If it is the case, maybe some words and terminology would be too difficult for them to comprehend.
+
+Maybe you can add more information about the distribution and statistics you use, and the reason why you choose them in your project, so that your words and results can be more convincing.
+
+Below are some of other comments for your inference:
+1. Is the project organized modularly, with Make as the workflow manager?
+   Yes. The project structure is very clear and complete, and the "Make" file is already in the folder /project_3/scripts/
+
+2. Does the project use both Python (Pandas specifically) and R (Tidyverse specifically) scripts?
+   Yes. "pandas" is applied in the script "patientsdata.py" and "tax.py", while "tidyverse" is used in "tax_graph.R" and "patient_data_graph.R".
+
+3. Is Docker used to define execution environments appropriately?
+   Umm, actually I'm not able to find the Docker file in the repository, would you mind sharing your dockerfile on the github folder?
+
+4. Are the plots appropriate for the data types, the hypotheses being tested, and the points being communicated?
+   Yes, I think so. The barplot for "tax" is useful to compare the two distribution you introduced. 
+   Also the boxplot gives a clear view of the distribution of the age per disability developed while at UMD.
+
+5. How can the project be organized or documented more clearly?
+   Actually the project has been very organized I think.
+   Maybe you can add more comments to the scripts so that the viewers can get to know the purpose of each step of your analysis or visualization when they are viewing the code.
+
+6. Is the purpose of the project communicated clearly?
+   Yes, the motivations and purpose of project have been stated in the README file clearly.
+
+7. Does the purpose of the project make sense from the client’s point of view? How could the project better serve the client?
+   Yes, I think the results and interpretations of the project would be help the staffs of UMD build a clearer view of the structure and characteristics of their clients, so that they could make better preparations when someone needs assistance.
+
+8. Is the source of the data made clear? (Remember that this project can be part of your public portfolios, so people not familiar with UMD may see it).
+   Yes, it has been communicated in the README file.
+
+9. Is the interpretation of figures clearly explained?
+   Yes, in the final report the figures and conclusions have been interpreted clearly.
+
+10. Is the purpose and interpretation of analysis steps clearly communicated?
+   Yes, they've been in the final report.
+
+11. Are overall take-home messages clearly communicated?
+   I think so, all the tables, figures and the derived conclusions are given clearly in the final report.
+
+Finally, thanks for your efforts on the project and wish you a successful presentation!

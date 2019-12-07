@@ -1,0 +1,62 @@
+Provide feedback about the following topics:
+
+1. Is the project organized modularly, with Make as the workflow manager?
+
+Yes. 
+
+2. Does the project use both Python (Pandas specifically) and R (Tidyverse specifically) scripts?
+
+Yes.
+
+3. Is Docker used to define execution environments appropriately?
+
+Yes.
+
+4. Are the plots appropriate for the data types, the hypotheses being tested, and the points being communicated?
+
+Yes.
+
+5. How can the project be organized or documented more clearly?
+
+Instructions are clear and project is organized.  
+
+Your ReadMe.md is really good.  Just a few notes on readability below.  I hope this helps!
+
+Under Motivation in ReadMe.md, this line does not read well "Not only are the efforts of counselors into helping homeless find a home important..."
+
+In the results section, "the first digit of the net income" --Clarify what you mean by "first digit"?
+
+
+6. Is the purpose of the project communicated clearly?
+
+Very well outlined!  The statistical analysis you've incorporated is described well and adds alot to this presentation.
+
+I think the way you reference "disability" here may not align with what it represents in this dataset.  See this sentence in the  Motivation section in ReadMe.md:
+"To inspect the work of counselors, this project will examine if the shelter reduces the number of diabilities reported by new-incomers by the time they find a home."
+
+Counselor performance seems unrelated to the increased or decreased reporting of disabilities.  Not all disabilities are curable, nor can they be treated by the counselors.  A lot of different factors play a role in the health outcomes of these clients, i.e. access to care, health insurance, transportation, etc.
+
+See this sentence under Approach in ReadMe.md:
+The distribution of ages among those who got a disability while at the UMD will be plotted using boxplots, stratified by condition.
+
+Disabilities do not develop suddenly for most people, compare to catching a cold. I would assume that even clients whose disability was reported after their entry date already had the related illness or injury but may not have been recieving benefits until the date reported. For this reason, I'm not sure what conclusions can be drawn from this.
+
+7. Does the purpose of the project make sense from the client’s point of view? How could the project better serve the client?
+
+See #6.
+
+8. Is the source of the data made clear? (Remember that this project can be part of your public portfolios, so people not familiar with UMD may see it).
+
+Yes. 
+
+9. Is the interpretation of figures clearly explained?
+
+Yes.  Very well done.
+
+10. Is the purpose and interpretation of analysis steps clearly communicated?
+
+See $6.
+
+11. Are overall take-home messages clearly communicated?
+
+Yes.   

@@ -1,0 +1,171 @@
+---
+title: "Urban Ministries of Durham"
+author: "Jesus E. Vazquez"
+date: "11/18/2019"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Background Description
+
+Urban Ministries of Durham assist around 6,000 people each year who need food, shelter, clothing and/or supportive services. Some of the programs that they offer is a (1) community shelter where people are given a place to sleep and assistance to help them find a home, a (2) Community CafÃ© that serves three meals a day, seven days a week, 365 days a year, and a (3) food and clothing closet for those that either need food or clothing. 
+
+## Motivation
+
+Just as with any other organization, validation of the organization efforts is needed to understand if Urban Minisitries of Durham is doing a good job at helping people transform their lives. Having this information at hand when meeting with donors can give a sense of security that their donations are not going to waste. Not only are the efforts of counselors into helping homeless find a home important but one should also consider how finances are being managed at the homesless shelter. For this reason the tax records will be examined to show if there are any signs of fradulent behavior. To inspect the work of counselors, this project will examine who of the new-incomers get a new disability by the time they find a home. Having demographic characteristics of these individuals can help guide conselors into giving them extra attention to help prevent new disabilities, such as HIV.
+
+## Approach
+
+To determine the financial performance of the organization from the Urban Ministries of Durham the first digit of the net income will be considered. Theoretically, this should follow a Bendford distribution and any deviations from this distribution would suggest fabricated numbers. For the second part of the project, we will count the number of patients that came in with no condition (e.g. - mental health problem) and left with one. Additionally, the distribution of ages among those who got a disability while at the UMD will be plotted using boxplots, stratified by gender.
+
+## Results 
+
+### I. Urban Ministries of Durham Fraud Analysis
+
+To determine the financial performance of the organization from the Urban Ministries of Durham the first digit of the net income (income minus expenses) will be considered. Theoretically, this should follow a Bendford distribution and any deviations from this distribution would suggest fabricated numbers. In practice this tests requires more than 50 observations but in this case we only had 12, but we validated results using small sample theory. The following are the statistical results.
+
+**Large Sample Theory**
+
+When conducting this analysis one assumes that we have a record of a business taxes for many years so it's typical to use a Chi-Square Test to test for differences between the empirical and the theorical distributions. It is recommened for one to have at least 40 observations but in this case we only have 12. The following are the results from the Chi-Square Test.
+
+```{R echo = FALSE, message = FALSE, warning = FALSE}
+# Chi-Square Test
+library(tidyverse)
+
+fraud_data = read_csv('fraud_chisq.csv') %>% 
+  select(-c("X1"))
+
+mychisq = chisq.test(fraud_data$Counts, fraud_data$ExpectedCounts)
+mychisq
+```
+
+From the Chi-Square Test we can observe that the sampled data does not provide sufficient evidence to reject the null hypothesis that the empirical distribution does not come from the Benford Distribution with a p-value of `r round(mychisq$p.value, 2)`. We can conlude, from the large sample test that there is not sufficient evidence to reject the claim that Urban Ministriest of Durham does not engage in dishonest tax-reporting. 
+
+**Small Sample Theory**
+
+To validate results a small sample permutation test was conducted using the Wilcoxon Rank Sum.
+
+```{R echo = FALSE, message = FALSE, warning = FALSE}
+#Wilcoxon-Rank Sum Test
+mywilcox = wilcox.test(fraud_data$Counts, fraud_data$ExpectedCounts)
+mywilcox
+```
+
+Just as with the Chi-Square test, the Wilcoxon Rank Sum Test shows that the data does not provide sufficient data to reject the assumption that the expected and the observed values follows the same distribution with a p-value of `r round(mywilcox$p.value, 2)`. We can conclude that the income tax reports from Urban Ministries of Durham do not provide sufficient data to suggest that the non-for-profit engaged in disingenuous tax filling behavior. The following is a graphical representation on how the the two distributions compare.
+
+```{R echo = FALSE, message = FALSE, warning = FALSE}
+library(ggplot2)
+my_tax_data = read_csv("tax_data_graph.csv")
+
+tax_plot = ggplot(data=my_tax_data, aes(x=Number, y=value, fill=variable)) +
+  geom_bar(stat="identity", color="black", position=position_dodge()) + theme_minimal() +
+  labs(title = "Urban Ministries of Durham - 2006-2018 Tax Fraud Analysis", subtitle = 'First digit of net-income reported per year', y = 'Percentage (%)', fill = "Group") +
+  scale_x_continuous("Digit", labels = as.character(my_tax_data$Number), breaks = my_tax_data$Number)
+
+print(tax_plot)
+```
+
+**Figure** 1 above represents the empirical distribution of the first digit reported as the net income (revenue minus expenses) in light blue vs the theoretical distribution in dark blue. From visual inspection we can observe that the majority of the revenue values beggin with either a 1 or a 5. According to past IRS analyzes, individuals that engage in dishonest income tax reporting tend to pick values in the middle and not so much from the extremes (eg. 1 or 9), as it happens in this case. From visual inspection we can observe some evidence of potential dishonesty but we would need a longer timeframe to validate results.
+
+### I. Disability Analysis
+
+In this section we are interested in identifying the risk factors of those homeless individuals who got a disability while staying at the Urban Ministries of Durham. The following is the a box plot that shows the distribution of age among those who gained a disability while staying at the Urban Ministries of Durham stratified by gender. As we can observe there is no clear difference in age distribution between the males and the females. 
+
+```{R echo = FALSE, message = FALSE, warning = FALSE}
+# This code creates the distributions age per disability attainted while at UMD
+my_patient_data = read_csv("patients_data_graph.csv")
+
+patient_plot = ggplot(my_patient_data, aes(x=Gender, y = my_patient_data$`Client Age at Entry`)) +
+  geom_boxplot(fill='#00BFC4') +
+  theme_minimal() +  
+  labs(title = "Distributions of Age of Patients who Gained Disability", subtitle = 'Stratified by Gender', y = 'Age', x = 'Gender') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+print(patient_plot)
+```
+
+To further investigate if there was either males or females has a higher risk of developing a disability while at UMD a bar-plot was done of those individuals who got a disability stratified by gender.
+
+```{R echo = FALSE, message = FALSE, warning = FALSE}
+read_csv("counts.csv") %>%
+    ggplot(aes(fill=Gender, y=N, x=`Disability Type`)) + 
+    geom_text(aes(label=N), vjust = -0.5, position = position_dodge(0.9)) +
+  scale_y_continuous(limits = c(0, 10)) +
+    geom_bar(position="dodge", stat="identity") +
+    labs(title = 'Count of Disabilities Attainted while at UMD', subtitle = 'By Gender', y = 'Count') +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+Here we can observe that men are in every single category and that women are the ones most affected in the "Mental Health" area. To further investigate this issue we conducted a logistic regression in the next section.
+
+**Statistical Analysis**
+
+All possible interactions between gender, ethnicity, and age group were considered using logistic regression when predicting the development of a new disease while staying at the Urban Ministries of Durham. The best fitted model was selected using backward-selection. The results are as follows:
+
+```{R echo = FALSE, message = FALSE, warning = FALSE}
+# -------------- #
+# Importing data
+# -------------- #
+
+mydata = read_csv("logistic_data.csv") %>%
+    select("GotDisability","Gender", "Age_Cat", "Client Ethnicity") %>%
+    na.omit()
+
+# ------------------------------------------------------------------- #
+# No Case Control
+# ------------------------------------------------------------------- #
+model = glm(data = mydata, GotDisability ~ Gender*Age_Cat*`Client Ethnicity`, family = binomial(link="logit"))
+model.backward = step(model, direction = 'backward', trace = 0)
+
+# library(sjPlot)
+#tab_model(model.backward, file="output.html", show.r2 = FALSE, title = 'Logistic Regression: OR Estimates for Disability Attainment')
+#exp(model.backward$coefficients)
+summary(model.backward)
+
+# Get AUC
+library(pROC)
+predpr = predict(model.backward,type=c("response"))
+roccurve <- roc(mydata$GotDisability ~ predpr)
+```
+
+From the logistic regression output we can observe that no interactions were found when approximating the best fitting model using backward-selection method. The best model identified **gender** and **age** of the participants as statistically significant risk factors at the 0.01 and 0.10 level respectively. From this model it was found that on average, the odds of males of getting a new disability while staying at UMD is 0.40 times the odds of women. Additionally, it was found that the odds of getting a new disability for homeless people between the ages of 55 to 64 was 3.57 times the odds of individuals who age was less than 25. The performance of the model was fair with an AUC score of `r round(auc(roccurve),2)`. The rest of the summary statistics are found above.
+
+**Case Control Analysis - Propensity Scores**
+
+The prevalence of the condition is low `r round(mean(mydata$GotDisability)*100,2)`%, thus the results shown above might be biased. In order to get a better approximation to the odds ratio from the risk factors considered above this study used propensity scores to conduct a case-control analysis with 5 controls per every case. The propensity scores were calculated as a function of the risk factors considered. This allows us to better approximate the OR as causal effects, please visit [Gary King](https://r.iq.harvard.edu/docs/matchit/2.4-15/Examples2.html) for more information. The results are as follows,
+
+```{R echo = FALSE, message = FALSE, warning = FALSE}
+# ------------------------------------------------------------------- #
+# Case Control - using propensity scores to approximate causal effects
+# ------------------------------------------------------------------- #
+
+# Selecting the controls for the cases
+library(MatchIt)
+ccdata = matchit(GotDisability ~ as.factor(Gender) + as.factor(Age_Cat) + as.factor(`Client Ethnicity`), data = mydata, ratio = 5, method = "nearest", caliper = .2)
+matched_data <- match.data(ccdata) # create ps matched data set from previous output
+cc.model = glm(GotDisability ~  Gender+Age_Cat, data = matched_data, family = binomial(link = "logit"))
+# exp(cc.model$coefficients)
+# tab_model(cc.model, file="output.html", show.r2 = FALSE, title = 'Logistic Regression: CC OR Estimates for Disability Attainment')
+summary(cc.model)
+
+# Get AUC
+predpr.cc = predict(cc.model,type=c("response"))
+roccurve <- roc(matched_data$GotDisability ~ predpr.cc)
+```
+
+The case-control study results do not show signs of significance but from the output we can observe that being a male and older than 25 are now risk factors of getting a new disability while at staying at the UMD. The AUC from the case-control study is `r round(auc(roccurve),2)`% which tells us that the model under the case-control study has very poor predictive power. 
+
+## Discussion and Conclusion
+
+On this study we were assesed the performance of the Urban Ministries of Durham at the admisnitrative and counselor level. We conducted a fraud analysis on the net-income from taxes reported and we did not find enough evidence to suggest that the administrative staff engages in dishonest tax-filing behavior. A logistic regression was then fitted to establish the risk factors of developing a disability of individuals while staying at the Urban Ministries of Durham. When conducting the analysis on the entire dataset we found that men had a lower odds of developing a disability in comparison to women, and that individuals of the age group 55-64 had a higher odds of develping a disability in comparison to individuals less than 25 year of age.
+
+When conducting the logistic regression case-control analysis we found out that men actually had a higher odds of developing a disability in comparison to women. This contra-indicates the results when considering the entire cohort. Although the case-control analysis did not have significant results, the estimates agree with the plots made in this project. We were able to show the majority of the number of disabilities are attribuuted to men and not women. 
+
+Urban Ministries of Durham should consider these findings when developing new programs to enhance the quality of living of members. Counselors should not only put extra careful with males in general for them not to develop any additional disabilities, but also special attention to women in the area of mental health problems. 
